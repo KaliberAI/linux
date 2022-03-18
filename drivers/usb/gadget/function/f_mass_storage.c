@@ -2015,7 +2015,6 @@ static int do_scsi_command(struct fsg_common *common)
 		break;
 
 	case WRITE_6:
-		printk(KERN_INFO "WRITE 6 - mason \n");
 		i = common->cmnd[4];
 		common->data_size_from_cmnd = (i == 0) ? 256 : i;
 		reply = check_command_size_in_blocks(common, 6,
@@ -2026,12 +2025,6 @@ static int do_scsi_command(struct fsg_common *common)
 			reply = do_write(common);
 		break;
 
-	/*
-	 * TODO: 
-	 * - Track the amount of data written for all the requests
-	 * - Track the number of write requests to compare against ioctl
-	 * 
-	 */
 	case WRITE_10:
 		printk(KERN_INFO "WRITE 10 - mason \n");
 		common->data_size_from_cmnd =
@@ -2050,7 +2043,6 @@ static int do_scsi_command(struct fsg_common *common)
 		break;
 
 	case WRITE_12:
-		printk(KERN_INFO "WRITE 12 - mason \n");
 		common->data_size_from_cmnd =
 				get_unaligned_be32(&common->cmnd[6]);
 		reply = check_command_size_in_blocks(common, 12,

@@ -45,11 +45,6 @@
 
 #include "f_mass_storage.h"
 
-/*-------------------------------------------------------------------------*/
-
-static struct kobject *mass_storage_kobj;
-
-/*-------------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------------*/
 USB_GADGET_COMPOSITE_OPTIONS();
@@ -88,6 +83,17 @@ static struct usb_gadget_strings *dev_strings[] = {
 
 static struct usb_function_instance *fi_msg;
 static struct usb_function *f_msg;
+
+static struct kobject *mass_storage_kobj;
+static u32 bytes_written = 0;
+
+static ssize_t sysfs_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	bytes_written = fsg_get_num_bytes_written();
+	return sprintf(buf, "%u\n", bytes_written);
+}
+
+static struct kobj_attribute mass_storage_attribute = __ATTR(bytes_written, 0444, sysfs_show, NULL);
 
 /****************************** Configurations ******************************/
 
@@ -148,6 +154,7 @@ static int msg_bind(struct usb_composite_dev *cdev)
 	struct fsg_opts *opts;
 	struct fsg_config config;
 	int status;
+	int ret;
 
 	fi_msg = usb_get_function_instance("mass_storage");
 	if (IS_ERR(fi_msg))
@@ -197,7 +204,11 @@ static int msg_bind(struct usb_composite_dev *cdev)
 	dev_info(&cdev->gadget->dev,
 		 DRIVER_DESC ", version: " DRIVER_VERSION "\n");
 
-	mass_storage_kobj = kobject_create_and_add("mass_storage", NULL);
+	mass_storage_kobj = kobject_create_and_add("mass_storage_gadget", NULL);
+	ret = sysfs_create_file(mass_storage_kobj, &mass_storage_attribute.attr);
+	if (ret) {
+		printk(KERN_WARNING "Error creating sysfs file\n");
+	}
 
 	return 0;
 
