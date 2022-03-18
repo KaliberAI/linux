@@ -225,6 +225,21 @@ static struct usb_gadget_strings *fsg_strings_array[] = {
 
 /*-------------------------------------------------------------------------*/
 
+
+
+/*-------------------------------------------------------------------------*/
+
+/* Num bytes written while the driver has been active */
+static u32 num_bytes_written = 0; 
+
+u32 fsg_get_num_bytes_written(void) {
+	return num_bytes_written;
+}
+EXPORT_SYMBOL_GPL(fsg_get_num_bytes_written);
+
+
+/*-------------------------------------------------------------------------*/
+
 struct fsg_dev;
 struct fsg_common;
 
@@ -1833,12 +1848,15 @@ static int do_scsi_command(struct fsg_common *common)
 		break;
 
 	case ALLOW_MEDIUM_REMOVAL:
+		printk(KERN_INFO "ALLOW_MEDIUM_REMOVAL\n");
 		common->data_size_from_cmnd = 0;
 		reply = check_command(common, 6, DATA_DIR_NONE,
 				      (1<<4), 0,
 				      "PREVENT-ALLOW MEDIUM REMOVAL");
 		if (reply == 0)
 			reply = do_prevent_allow(common);
+		
+		printk(KERN_INFO "Can remove medium: %d\n", common->curlun->prevent_medium_removal);
 		break;
 
 	case READ_6:
@@ -1976,14 +1994,20 @@ static int do_scsi_command(struct fsg_common *common)
 		break;
 
 	case WRITE_10:
+		printk(KERN_INFO "WRITE 10 - mason \n");
 		common->data_size_from_cmnd =
 				get_unaligned_be16(&common->cmnd[7]);
 		reply = check_command_size_in_blocks(common, 10,
 				      DATA_DIR_FROM_HOST,
 				      (1<<1) | (0xf<<2) | (3<<7), 1,
 				      "WRITE(10)");
-		if (reply == 0)
+		if (reply == 0) {
+			printk(KERN_INFO "Size of data to write: %u\n", common->data_size_from_cmnd);
+			num_bytes_written += common->data_size_from_cmnd;
+			printk(KERN_INFO "Total bytes written: %u\n", num_bytes_written);
+
 			reply = do_write(common);
+		}
 		break;
 
 	case WRITE_12:

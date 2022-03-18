@@ -141,4 +141,6 @@ void fsg_config_from_params(struct fsg_config *cfg,
 			    const struct fsg_module_parameters *params,
 			    unsigned int fsg_num_buffers);
 
+u32 fsg_get_num_bytes_written(void);
+
 #endif /* USB_F_MASS_STORAGE_H */
