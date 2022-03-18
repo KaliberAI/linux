@@ -27,10 +27,11 @@
 #include <linux/kernel.h>
 #include <linux/usb/ch9.h>
 #include <linux/module.h>
+#include <linux/kobject.h>
 
 /*-------------------------------------------------------------------------*/
 
-#define DRIVER_DESC		"Mass Storage Gadget"
+#define DRIVER_DESC		"Mass Storage Gadget - kaliber"
 #define DRIVER_VERSION		"2009/09/11"
 
 /*
@@ -43,6 +44,12 @@
 #define FSG_PRODUCT_ID	0xa4a5	/* Linux-USB File-backed Storage Gadget */
 
 #include "f_mass_storage.h"
+
+/*-------------------------------------------------------------------------*/
+
+static struct kobject *mass_storage_kobj;
+
+/*-------------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------------*/
 USB_GADGET_COMPOSITE_OPTIONS();
@@ -189,6 +196,9 @@ static int msg_bind(struct usb_composite_dev *cdev)
 	usb_composite_overwrite_options(cdev, &coverwrite);
 	dev_info(&cdev->gadget->dev,
 		 DRIVER_DESC ", version: " DRIVER_VERSION "\n");
+
+	mass_storage_kobj = kobject_create_and_add("mass_storage", NULL);
+
 	return 0;
 
 fail_otg_desc:
@@ -205,6 +215,8 @@ fail:
 
 static int msg_unbind(struct usb_composite_dev *cdev)
 {
+	u32 num_bytes = fsg_get_num_bytes_written();
+	printk(KERN_INFO "Num bytes written - mass_storage: %u \n", num_bytes);
 	if (!IS_ERR(f_msg))
 		usb_put_function(f_msg);
 
@@ -214,6 +226,8 @@ static int msg_unbind(struct usb_composite_dev *cdev)
 	kfree(otg_desc[0]);
 	otg_desc[0] = NULL;
 
+	kobject_put(mass_storage_kobj);
+	kobject_del(mass_storage_kobj);
 	return 0;
 }
 
