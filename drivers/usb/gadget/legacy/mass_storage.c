@@ -8,7 +8,6 @@
  * All rights reserved.
  */
 
-
 /*
  * The Mass Storage Gadget acts as a USB Mass Storage device,
  * appearing to the host as a disk drive or as a CD-ROM drive.  In
@@ -23,7 +22,6 @@
  * comments in this file for more detailed description.
  */
 
-
 #include <linux/kernel.h>
 #include <linux/usb/ch9.h>
 #include <linux/module.h>
@@ -31,8 +29,8 @@
 
 /*-------------------------------------------------------------------------*/
 
-#define DRIVER_DESC		"Mass Storage Gadget - kaliber"
-#define DRIVER_VERSION		"2009/09/11"
+#define DRIVER_DESC "Mass Storage Gadget - kaliber"
+#define DRIVER_VERSION "2009/09/11"
 
 /*
  * Thanks to NetChip Technologies for donating this product ID.
@@ -40,26 +38,25 @@
  * DO NOT REUSE THESE IDs with any other driver!!  Ever!!
  * Instead:  allocate your own, using normal USB-IF procedures.
  */
-#define FSG_VENDOR_ID	0x0525	/* NetChip */
-#define FSG_PRODUCT_ID	0xa4a5	/* Linux-USB File-backed Storage Gadget */
+#define FSG_VENDOR_ID 0x0525 /* NetChip */
+#define FSG_PRODUCT_ID 0xa4a5 /* Linux-USB File-backed Storage Gadget */
 
 #include "f_mass_storage.h"
-
 
 /*-------------------------------------------------------------------------*/
 USB_GADGET_COMPOSITE_OPTIONS();
 
 static struct usb_device_descriptor msg_device_desc = {
-	.bLength =		sizeof msg_device_desc,
-	.bDescriptorType =	USB_DT_DEVICE,
+	.bLength = sizeof msg_device_desc,
+	.bDescriptorType = USB_DT_DEVICE,
 
 	/* .bcdUSB = DYNAMIC */
-	.bDeviceClass =		USB_CLASS_PER_INTERFACE,
+	.bDeviceClass = USB_CLASS_PER_INTERFACE,
 
 	/* Vendor and product id can be overridden by module parameters.  */
-	.idVendor =		cpu_to_le16(FSG_VENDOR_ID),
-	.idProduct =		cpu_to_le16(FSG_PRODUCT_ID),
-	.bNumConfigurations =	1,
+	.idVendor = cpu_to_le16(FSG_VENDOR_ID),
+	.idProduct = cpu_to_le16(FSG_PRODUCT_ID),
+	.bNumConfigurations = 1,
 };
 
 static const struct usb_descriptor_header *otg_desc[2];
@@ -68,12 +65,12 @@ static struct usb_string strings_dev[] = {
 	[USB_GADGET_MANUFACTURER_IDX].s = "",
 	[USB_GADGET_PRODUCT_IDX].s = DRIVER_DESC,
 	[USB_GADGET_SERIAL_IDX].s = "",
-	{  } /* end of list */
+	{} /* end of list */
 };
 
 static struct usb_gadget_strings stringtab_dev = {
-	.language       = 0x0409,       /* en-us */
-	.strings        = strings_dev,
+	.language = 0x0409, /* en-us */
+	.strings = strings_dev,
 };
 
 static struct usb_gadget_strings *dev_strings[] = {
@@ -85,21 +82,21 @@ static struct usb_function_instance *fi_msg;
 static struct usb_function *f_msg;
 
 static struct kobject *mass_storage_kobj;
-static u32 bytes_written = 0;
+static u64 bytes_written = 0;
 
-static ssize_t sysfs_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t sysfs_show(struct kobject *kobj, struct kobj_attribute *attr,
+			  char *buf)
 {
 	bytes_written = fsg_get_num_bytes_written();
 	return sprintf(buf, "%u\n", bytes_written);
 }
 
-static struct kobj_attribute mass_storage_attribute = __ATTR(bytes_written, 0444, sysfs_show, NULL);
+static struct kobj_attribute mass_storage_attribute =
+	__ATTR(bytes_written, 0444, sysfs_show, NULL);
 
 /****************************** Configurations ******************************/
 
-static struct fsg_module_parameters mod_data = {
-	.stall = 1
-};
+static struct fsg_module_parameters mod_data = { .stall = 1 };
 #ifdef CONFIG_USB_GADGET_DEBUG_FILES
 
 static unsigned int fsg_num_buffers = CONFIG_USB_GADGET_STORAGE_NUM_BUFFERS;
@@ -110,7 +107,7 @@ static unsigned int fsg_num_buffers = CONFIG_USB_GADGET_STORAGE_NUM_BUFFERS;
  * Number of buffers we will use.
  * 2 is usually enough for good buffering pipeline
  */
-#define fsg_num_buffers	CONFIG_USB_GADGET_STORAGE_NUM_BUFFERS
+#define fsg_num_buffers CONFIG_USB_GADGET_STORAGE_NUM_BUFFERS
 
 #endif /* CONFIG_USB_GADGET_DEBUG_FILES */
 
@@ -141,11 +138,10 @@ put_func:
 }
 
 static struct usb_configuration msg_config_driver = {
-	.label			= "Linux File-Backed Storage",
-	.bConfigurationValue	= 1,
-	.bmAttributes		= USB_CONFIG_ATT_SELFPOWER,
+	.label = "Linux File-Backed Storage",
+	.bConfigurationValue = 1,
+	.bmAttributes = USB_CONFIG_ATT_SELFPOWER,
 };
-
 
 /****************************** Gadget Bind ******************************/
 
@@ -205,7 +201,8 @@ static int msg_bind(struct usb_composite_dev *cdev)
 		 DRIVER_DESC ", version: " DRIVER_VERSION "\n");
 
 	mass_storage_kobj = kobject_create_and_add("mass_storage_gadget", NULL);
-	ret = sysfs_create_file(mass_storage_kobj, &mass_storage_attribute.attr);
+	ret = sysfs_create_file(mass_storage_kobj,
+				&mass_storage_attribute.attr);
 	if (ret) {
 		printk(KERN_WARNING "Error creating sysfs file\n");
 	}
@@ -245,13 +242,13 @@ static int msg_unbind(struct usb_composite_dev *cdev)
 /****************************** Some noise ******************************/
 
 static struct usb_composite_driver msg_driver = {
-	.name		= "g_mass_storage",
-	.dev		= &msg_device_desc,
-	.max_speed	= USB_SPEED_SUPER_PLUS,
-	.needs_serial	= 1,
-	.strings	= dev_strings,
-	.bind		= msg_bind,
-	.unbind		= msg_unbind,
+	.name = "g_mass_storage",
+	.dev = &msg_device_desc,
+	.max_speed = USB_SPEED_SUPER_PLUS,
+	.needs_serial = 1,
+	.strings = dev_strings,
+	.bind = msg_bind,
+	.unbind = msg_unbind,
 };
 
 module_usb_composite_driver(msg_driver);
