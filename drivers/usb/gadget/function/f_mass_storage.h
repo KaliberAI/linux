@@ -6,54 +6,51 @@
 #include "storage_common.h"
 
 struct fsg_module_parameters {
-	char		*file[FSG_MAX_LUNS];
-	bool		ro[FSG_MAX_LUNS];
-	bool		removable[FSG_MAX_LUNS];
-	bool		cdrom[FSG_MAX_LUNS];
-	bool		nofua[FSG_MAX_LUNS];
+	char *file[FSG_MAX_LUNS];
+	bool ro[FSG_MAX_LUNS];
+	bool removable[FSG_MAX_LUNS];
+	bool cdrom[FSG_MAX_LUNS];
+	bool nofua[FSG_MAX_LUNS];
 
-	unsigned int	file_count, ro_count, removable_count, cdrom_count;
-	unsigned int	nofua_count;
-	unsigned int	luns;	/* nluns */
-	bool		stall;	/* can_stall */
+	unsigned int file_count, ro_count, removable_count, cdrom_count;
+	unsigned int nofua_count;
+	unsigned int luns; /* nluns */
+	bool stall; /* can_stall */
 };
 
-#define _FSG_MODULE_PARAM_ARRAY(prefix, params, name, type, desc)	\
-	module_param_array_named(prefix ## name, params.name, type,	\
-				 &prefix ## params.name ## _count,	\
-				 S_IRUGO);				\
-	MODULE_PARM_DESC(prefix ## name, desc)
+#define _FSG_MODULE_PARAM_ARRAY(prefix, params, name, type, desc)              \
+	module_param_array_named(prefix##name, params.name, type,              \
+				 &prefix##params.name##_count, S_IRUGO);       \
+	MODULE_PARM_DESC(prefix##name, desc)
 
-#define _FSG_MODULE_PARAM(prefix, params, name, type, desc)		\
-	module_param_named(prefix ## name, params.name, type,		\
-			   S_IRUGO);					\
-	MODULE_PARM_DESC(prefix ## name, desc)
+#define _FSG_MODULE_PARAM(prefix, params, name, type, desc)                    \
+	module_param_named(prefix##name, params.name, type, S_IRUGO);          \
+	MODULE_PARM_DESC(prefix##name, desc)
 
-#define __FSG_MODULE_PARAMETERS(prefix, params)				\
-	_FSG_MODULE_PARAM_ARRAY(prefix, params, file, charp,		\
-				"names of backing files or devices");	\
-	_FSG_MODULE_PARAM_ARRAY(prefix, params, ro, bool,		\
-				"true to force read-only");		\
-	_FSG_MODULE_PARAM_ARRAY(prefix, params, removable, bool,	\
-				"true to simulate removable media");	\
-	_FSG_MODULE_PARAM_ARRAY(prefix, params, cdrom, bool,		\
-				"true to simulate CD-ROM instead of disk"); \
-	_FSG_MODULE_PARAM_ARRAY(prefix, params, nofua, bool,		\
-				"true to ignore SCSI WRITE(10,12) FUA bit"); \
-	_FSG_MODULE_PARAM(prefix, params, luns, uint,			\
-			  "number of LUNs");				\
-	_FSG_MODULE_PARAM(prefix, params, stall, bool,			\
+#define __FSG_MODULE_PARAMETERS(prefix, params)                                \
+	_FSG_MODULE_PARAM_ARRAY(prefix, params, file, charp,                   \
+				"names of backing files or devices");          \
+	_FSG_MODULE_PARAM_ARRAY(prefix, params, ro, bool,                      \
+				"true to force read-only");                    \
+	_FSG_MODULE_PARAM_ARRAY(prefix, params, removable, bool,               \
+				"true to simulate removable media");           \
+	_FSG_MODULE_PARAM_ARRAY(prefix, params, cdrom, bool,                   \
+				"true to simulate CD-ROM instead of disk");    \
+	_FSG_MODULE_PARAM_ARRAY(prefix, params, nofua, bool,                   \
+				"true to ignore SCSI WRITE(10,12) FUA bit");   \
+	_FSG_MODULE_PARAM(prefix, params, luns, uint, "number of LUNs");       \
+	_FSG_MODULE_PARAM(prefix, params, stall, bool,                         \
 			  "false to prevent bulk stalls")
 
 #ifdef CONFIG_USB_GADGET_DEBUG_FILES
 
-#define FSG_MODULE_PARAMETERS(prefix, params)				\
-	__FSG_MODULE_PARAMETERS(prefix, params);			\
-	module_param_named(num_buffers, fsg_num_buffers, uint, S_IRUGO);\
+#define FSG_MODULE_PARAMETERS(prefix, params)                                  \
+	__FSG_MODULE_PARAMETERS(prefix, params);                               \
+	module_param_named(num_buffers, fsg_num_buffers, uint, S_IRUGO);       \
 	MODULE_PARM_DESC(num_buffers, "Number of pipeline buffers")
 #else
 
-#define FSG_MODULE_PARAMETERS(prefix, params)				\
+#define FSG_MODULE_PARAMETERS(prefix, params)                                  \
 	__FSG_MODULE_PARAMETERS(prefix, params)
 
 #endif
@@ -80,8 +77,8 @@ struct fsg_opts {
 	 * This is to protect the data from concurrent access by read/write
 	 * and create symlink/remove symlink.
 	 */
-	struct mutex			lock;
-	int				refcnt;
+	struct mutex lock;
+	int refcnt;
 };
 
 struct fsg_lun_config {
@@ -98,15 +95,15 @@ struct fsg_config {
 	struct fsg_lun_config luns[FSG_MAX_LUNS];
 
 	/* Callback functions. */
-	const struct fsg_operations	*ops;
+	const struct fsg_operations *ops;
 	/* Gadget's private data. */
-	void			*private_data;
+	void *private_data;
 
-	const char *vendor_name;		/*  8 characters or less */
-	const char *product_name;		/* 16 characters or less */
+	const char *vendor_name; /*  8 characters or less */
+	const char *product_name; /* 16 characters or less */
 
-	char			can_stall;
-	unsigned int		fsg_num_buffers;
+	char can_stall;
+	unsigned int fsg_num_buffers;
 };
 
 static inline struct fsg_opts *
@@ -141,6 +138,6 @@ void fsg_config_from_params(struct fsg_config *cfg,
 			    const struct fsg_module_parameters *params,
 			    unsigned int fsg_num_buffers);
 
-u32 fsg_get_num_bytes_written(void);
+u64 fsg_get_num_bytes_written(void);
 
 #endif /* USB_F_MASS_STORAGE_H */
