@@ -88,7 +88,7 @@ static ssize_t sysfs_show(struct kobject *kobj, struct kobj_attribute *attr,
 			  char *buf)
 {
 	bytes_written = fsg_get_num_bytes_written();
-	return sprintf(buf, "%u\n", bytes_written);
+	return sprintf(buf, "%llu\n", bytes_written);
 }
 
 static struct kobj_attribute mass_storage_attribute =

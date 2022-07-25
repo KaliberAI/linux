@@ -2003,7 +2003,7 @@ static int do_scsi_command(struct fsg_common *common)
 			printk(KERN_INFO "Size of data to write: %u\n",
 			       common->data_size_from_cmnd);
 			num_bytes_written += common->data_size_from_cmnd;
-			printk(KERN_INFO "Total bytes written: %u\n",
+			printk(KERN_INFO "Total bytes written: %llu\n",
 			       num_bytes_written);
 
 			reply = do_write(common);
